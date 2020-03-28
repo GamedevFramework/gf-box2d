@@ -113,6 +113,17 @@ namespace gfb2d {
     return createFixture(body, shape, flags);
   }
 
+  void PhysicsModel::setBodyAngleAndVelocity(b2Body *body, float newAngle, float newVelocity) {
+    assert(body);
+    body->SetTransform(body->GetPosition(), newAngle);
+    body->SetAngularVelocity(0.0f);
+
+    b2Rot rotation(newAngle);
+    b2Vec2 velocity(0.0f, newVelocity * m_scale);
+    velocity = b2Mul(rotation, velocity);
+    body->SetLinearVelocity(velocity);
+  }
+
   b2Vec2 PhysicsModel::computeGameToPhysicsCoordinates(gf::Vector2f coords) const {
     return { coords.x * m_scale, coords.y * m_scale };
   }

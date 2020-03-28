@@ -91,6 +91,8 @@ namespace gfb2d {
     b2Fixture *createPolylineFixture(b2Body *body, const gf::Polyline& polyline, FixtureFlags flags = FixtureFlags::None);
     b2Fixture *createPolygonFixture(b2Body *body, const gf::Polygon& polygon, FixtureFlags flags = FixtureFlags::None);
 
+    void setBodyAngleAndVelocity(b2Body *body, float newAngle, float newVelocity);
+
     b2Vec2 computeGameToPhysicsCoordinates(gf::Vector2f coords) const;
     gf::Vector2f computePhysicsToGameCoordinates(b2Vec2 coords) const;
 
