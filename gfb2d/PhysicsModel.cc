@@ -119,7 +119,7 @@ namespace gfb2d {
     body->SetAngularVelocity(0.0f);
 
     b2Rot rotation(newAngle);
-    b2Vec2 velocity(0.0f, newVelocity * m_scale);
+    b2Vec2 velocity(newVelocity * m_scale, 0.0f);
     velocity = b2Mul(rotation, velocity);
     body->SetLinearVelocity(velocity);
   }
