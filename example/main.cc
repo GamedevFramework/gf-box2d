@@ -13,7 +13,7 @@
 #include <gfb2d/PhysicsDebugger.h>
 
 int main() {
-  static constexpr gf::Vector2u ScreenSize(1024, 576);
+  static constexpr gf::Vector2i ScreenSize(1280, 720);
   static constexpr gf::Vector2f ViewSize(1000.0f, 1000.0f);
   static constexpr gf::Vector2f ViewCenter(0.0f, 0.0f);
 
@@ -67,9 +67,11 @@ int main() {
   for (int i = 0; i < 10; ++i) {
     auto body = physics.createSimpleBody(gf::vec(-400.0f + 80.0f * i + 20.0f, -400.0f));
     if (i % 2 == 0) {
-      physics.createCircleFixture(body, 30.0f);
+      auto fixture = physics.createCircleFixture(body, 30.0f);
+      fixture->SetRestitution(0.6f);
     } else {
-      physics.createRectangleFixture(body, gf::vec(60.0f, 40.0f));
+      auto fixture = physics.createRectangleFixture(body, gf::vec(60.0f, 40.0f));
+      fixture->SetRestitution(0.6f);
     }
   }
 
