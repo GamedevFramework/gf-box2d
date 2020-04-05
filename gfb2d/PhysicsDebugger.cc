@@ -29,7 +29,7 @@
 namespace gfb2d {
 
   namespace {
-    constexpr float DebugOutlineThickness = 1.0f;
+//     constexpr float DebugOutlineThickness = 1.0f;
     constexpr float DebugTransformLength = 0.5f;
   }
 
@@ -58,11 +58,13 @@ namespace gfb2d {
   void PhysicsDebugger::render(gf::RenderTarget& target, const gf::RenderStates& states) {
     m_model->world.DrawDebugData();
 
+    float thickness = target.getView().getSize().height * 0.002f;
+
     for (auto& polygon : m_draw.polygons) {
       gf::ConvexShape shape(polygon.shape);
       shape.setColor(gf::Color::Transparent);
       shape.setOutlineColor(polygon.color);
-      shape.setOutlineThickness(DebugOutlineThickness);
+      shape.setOutlineThickness(thickness);
       target.draw(shape, states);
     }
 
@@ -76,7 +78,7 @@ namespace gfb2d {
       gf::CircleShape shape(circle.shape);
       shape.setColor(gf::Color::Transparent);
       shape.setOutlineColor(circle.color);
-      shape.setOutlineThickness(DebugOutlineThickness);
+      shape.setOutlineThickness(thickness);
       target.draw(shape, states);
     }
 
@@ -86,26 +88,26 @@ namespace gfb2d {
       target.draw(shape, states);
 
       gf::Line line(circle.shape.center, circle.shape.center + circle.axis);
-      line.setWidth(2.5f * DebugOutlineThickness);
+      line.setWidth(2.5f * thickness);
       line.setColor(gf::Color::darker(circle.color, 0.3f));
       target.draw(line, states);
     }
 
     for (auto& segment : m_draw.segments) {
       gf::Line curve(segment.p1, segment.p2);
-      curve.setWidth(DebugOutlineThickness);
+      curve.setWidth(thickness);
       curve.setColor(segment.color);
       target.draw(curve, states);
     }
 
     for (auto& transform : m_draw.transforms) {
       gf::Line lineX(transform.position, transform.position + DebugTransformLength * transform.xAxis);
-      lineX.setWidth(DebugOutlineThickness);
+      lineX.setWidth(thickness);
       lineX.setColor(gf::Color::Red);
       target.draw(lineX, states);
 
       gf::Line lineY(transform.position, transform.position + DebugTransformLength * transform.yAxis);
-      lineY.setWidth(DebugOutlineThickness);
+      lineY.setWidth(thickness);
       lineY.setColor(gf::Color::Green);
       target.draw(lineY, states);
     }
