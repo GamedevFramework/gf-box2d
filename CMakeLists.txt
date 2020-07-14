@@ -38,6 +38,6 @@ target_include_directories(example_gf_box2d
 
 target_link_libraries(example_gf_box2d
   PRIVATE
-    gf::gf0
+    gf::graphics
     ${BOX2D_LIBRARIES}
 )
