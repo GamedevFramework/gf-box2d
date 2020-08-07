@@ -95,7 +95,10 @@ namespace gfb2d {
       shape.CreateLoop(line.data(), line.size());
     } else {
       assert(polyline.isChain());
-      shape.CreateChain(line.data(), line.size());
+      shape.CreateChain(line.data(), line.size(),
+        computeGameToPhysicsCoordinates(polyline.getPrevExtensionPoint()),
+        computeGameToPhysicsCoordinates(polyline.getNextExtensionPoint())
+      );
     }
 
     return createFixture(body, shape, flags);

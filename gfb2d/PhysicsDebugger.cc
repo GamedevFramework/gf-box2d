@@ -56,7 +56,7 @@ namespace gfb2d {
   }
 
   void PhysicsDebugger::render(gf::RenderTarget& target, const gf::RenderStates& states) {
-    m_model->world.DrawDebugData();
+    m_model->world.DebugDraw();
 
     float thickness = target.getView().getSize().height * 0.002f;
 
@@ -160,11 +160,11 @@ namespace gfb2d {
     solidPolygons.push_back({ std::move(polygon), toGameColor(color) });
   }
 
-  void PhysicsDebugger::PhysicsDraw::DrawCircle(const b2Vec2& center, float32 radius, const b2Color& color) {
+  void PhysicsDebugger::PhysicsDraw::DrawCircle(const b2Vec2& center, float radius, const b2Color& color) {
     circles.push_back({ gf::CircF(toGameCoords(center), radius / m_scale), toGameColor(color) });
   }
 
-  void PhysicsDebugger::PhysicsDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color) {
+  void PhysicsDebugger::PhysicsDraw::DrawSolidCircle(const b2Vec2& center, float radius, const b2Vec2& axis, const b2Color& color) {
     solidCircles.push_back({ gf::CircF(toGameCoords(center), radius / m_scale), toGameCoords(axis), toGameColor(color) });
   }
 
@@ -176,7 +176,7 @@ namespace gfb2d {
     transforms.push_back({ toGameCoords(xf.p), toGameCoords(xf.q.GetXAxis()), toGameCoords(xf.q.GetYAxis()) });
   }
 
-  void PhysicsDebugger::PhysicsDraw::DrawPoint(const b2Vec2& p, float32 size, const b2Color& color) {
+  void PhysicsDebugger::PhysicsDraw::DrawPoint(const b2Vec2& p, float size, const b2Color& color) {
     points.push_back({ toGameCoords(p), size, toGameColor(color) });
   }
 

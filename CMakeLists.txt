@@ -4,10 +4,8 @@ project(GF_BOX2D
   LANGUAGES CXX
 )
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/modules")
-
 find_package(gf REQUIRED)
-find_package(Box2D REQUIRED)
+find_package(box2d REQUIRED)
 
 add_executable(example_gf_box2d
   gfb2d/PhysicsDebugger.cc
@@ -32,12 +30,11 @@ set_target_properties(example_gf_box2d
 
 target_include_directories(example_gf_box2d
   PRIVATE
-    "${BOX2D_INCLUDE_DIRS}"
     "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
 target_link_libraries(example_gf_box2d
   PRIVATE
     gf::graphics
-    ${BOX2D_LIBRARIES}
+    box2d::box2d
 )
