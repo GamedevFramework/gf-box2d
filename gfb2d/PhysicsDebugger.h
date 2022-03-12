@@ -27,7 +27,8 @@
 
 #include <gf/Circ.h>
 #include <gf/Entity.h>
-#include <gf/Polygon.h>
+#include <gf/Particles.h>
+#include <gf/VertexArray.h>
 #include <gf/Vector.h>
 
 namespace gfb2d {
@@ -43,39 +44,39 @@ namespace gfb2d {
     void render(gf::RenderTarget& target, const gf::RenderStates& states) override;
 
   private:
-    struct Polygon {
-      gf::Polygon shape;
-      gf::Color4f color;
-    };
-
-    struct Circle {
-      gf::CircF shape;
-      gf::Color4f color;
-    };
-
-    struct SolidCircle {
-      gf::CircF shape;
-      gf::Vector2f axis;
-      gf::Color4f color;
-    };
-
-    struct Segment {
-      gf::Vector2f p1;
-      gf::Vector2f p2;
-      gf::Color4f color;
-    };
-
-    struct Transform {
-      gf::Vector2f position;
-      gf::Vector2f xAxis;
-      gf::Vector2f yAxis;
-    };
-
-    struct Point {
-      gf::Vector2f position;
-      float size;
-      gf::Color4f color;
-    };
+//     struct Polygon {
+//       gf::Polygon shape;
+//       gf::Color4f color;
+//     };
+//
+//     struct Circle {
+//       gf::CircF shape;
+//       gf::Color4f color;
+//     };
+//
+//     struct SolidCircle {
+//       gf::CircF shape;
+//       gf::Vector2f axis;
+//       gf::Color4f color;
+//     };
+//
+//     struct Segment {
+//       gf::Vector2f p1;
+//       gf::Vector2f p2;
+//       gf::Color4f color;
+//     };
+//
+//     struct Transform {
+//       gf::Vector2f position;
+//       gf::Vector2f xAxis;
+//       gf::Vector2f yAxis;
+//     };
+//
+//     struct Point {
+//       gf::Vector2f position;
+//       float size;
+//       gf::Color4f color;
+//     };
 
     struct PhysicsDraw : public b2Draw {
     public:
@@ -103,13 +104,8 @@ namespace gfb2d {
       /// Draw a point.
       void DrawPoint(const b2Vec2& p, float size, const b2Color& color) override;
 
-      std::vector<Polygon> polygons;
-      std::vector<Polygon> solidPolygons;
-      std::vector<Circle> circles;
-      std::vector<SolidCircle> solidCircles;
-      std::vector<Segment> segments;
-      std::vector<Transform> transforms;
-      std::vector<Point> points;
+      gf::ShapeParticles shapes;
+      gf::VertexArray lines;
 
     private:
       gf::Vector2f toGameCoords(b2Vec2 coords);

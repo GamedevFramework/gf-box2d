@@ -31,6 +31,8 @@ namespace gfb2d {
   namespace {
 //     constexpr float DebugOutlineThickness = 1.0f;
     constexpr float DebugTransformLength = 0.5f;
+
+    constexpr std::size_t DebugCirclePointCount = 23;
   }
 
   /*
@@ -56,77 +58,20 @@ namespace gfb2d {
   }
 
   void PhysicsDebugger::render(gf::RenderTarget& target, const gf::RenderStates& states) {
+    if (!m_debug) {
+      return;
+    }
+
+    m_draw.shapes.clear();
+    m_draw.lines.clear();
     m_model->world.DebugDraw();
 
     float thickness = target.getView().getSize().height * 0.002f;
+    gf::RenderStates localStates = states;
+    localStates.lineWidth = thickness;
 
-    for (auto& polygon : m_draw.polygons) {
-      gf::ConvexShape shape(polygon.shape);
-      shape.setColor(gf::Color::Transparent);
-      shape.setOutlineColor(polygon.color);
-      shape.setOutlineThickness(thickness);
-      target.draw(shape, states);
-    }
-
-    for (auto& polygon : m_draw.solidPolygons) {
-      gf::ConvexShape shape(polygon.shape);
-      shape.setColor(polygon.color);
-      target.draw(shape, states);
-    }
-
-    for (auto& circle : m_draw.circles) {
-      gf::CircleShape shape(circle.shape);
-      shape.setColor(gf::Color::Transparent);
-      shape.setOutlineColor(circle.color);
-      shape.setOutlineThickness(thickness);
-      target.draw(shape, states);
-    }
-
-    for (auto& circle : m_draw.solidCircles) {
-      gf::CircleShape shape(circle.shape);
-      shape.setColor(circle.color);
-      target.draw(shape, states);
-
-      gf::Line line(circle.shape.center, circle.shape.center + circle.axis);
-      line.setWidth(2.5f * thickness);
-      line.setColor(gf::Color::darker(circle.color, 0.3f));
-      target.draw(line, states);
-    }
-
-    for (auto& segment : m_draw.segments) {
-      gf::Line curve(segment.p1, segment.p2);
-      curve.setWidth(thickness);
-      curve.setColor(segment.color);
-      target.draw(curve, states);
-    }
-
-    for (auto& transform : m_draw.transforms) {
-      gf::Line lineX(transform.position, transform.position + DebugTransformLength * transform.xAxis);
-      lineX.setWidth(thickness);
-      lineX.setColor(gf::Color::Red);
-      target.draw(lineX, states);
-
-      gf::Line lineY(transform.position, transform.position + DebugTransformLength * transform.yAxis);
-      lineY.setWidth(thickness);
-      lineY.setColor(gf::Color::Green);
-      target.draw(lineY, states);
-    }
-
-    for (auto& point : m_draw.points) {
-      gf::CircleShape circle(point.size / 2);
-      circle.setColor(point.color);
-      circle.setAnchor(gf::Anchor::Center);
-      circle.setPosition(point.position);
-      target.draw(circle, states);
-    }
-
-    m_draw.polygons.clear();
-    m_draw.solidPolygons.clear();
-    m_draw.circles.clear();
-    m_draw.solidCircles.clear();
-    m_draw.segments.clear();
-    m_draw.transforms.clear();
-    m_draw.points.clear();
+    target.draw(m_draw.shapes, localStates);
+    target.draw(m_draw.lines, localStates);
   }
 
   /*
@@ -134,20 +79,23 @@ namespace gfb2d {
    */
 
   PhysicsDebugger::PhysicsDraw::PhysicsDraw(float scale, float opacity)
-  : m_scale(scale)
+  : lines(gf::PrimitiveType::Lines)
+  , m_scale(scale)
   , m_opacity(opacity)
   {
     SetFlags(b2Draw::e_shapeBit /* | b2Draw::e_aabbBit */ | b2Draw::e_pairBit | b2Draw::e_centerOfMassBit);
   }
 
   void PhysicsDebugger::PhysicsDraw::DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) {
-    gf::Polygon polygon;
+    gf::Vertex line[2];
+    line[0].color = line[1].color = toGameColor(color);
 
-    for (int32 i = 0; i < vertexCount; ++i) {
-      polygon.addPoint(toGameCoords(vertices[i]));
+    for (int32 i = 0; i < vertexCount - 1; ++i) {
+      line[0].position = toGameCoords(vertices[0]);
+      line[1].position = toGameCoords(vertices[1]);
+      lines.append(line[0]);
+      lines.append(line[1]);
     }
-
-    polygons.push_back({ std::move(polygon), toGameColor(color) });
   }
 
   void PhysicsDebugger::PhysicsDraw::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) {
@@ -157,27 +105,70 @@ namespace gfb2d {
       polygon.addPoint(toGameCoords(vertices[i]));
     }
 
-    solidPolygons.push_back({ std::move(polygon), toGameColor(color) });
+    shapes.addPolygon(polygon, toGameColor(color));
   }
 
   void PhysicsDebugger::PhysicsDraw::DrawCircle(const b2Vec2& center, float radius, const b2Color& color) {
-    circles.push_back({ gf::CircF(toGameCoords(center), radius / m_scale), toGameColor(color) });
+    gf::Vertex line[2];
+    line[0].color = line[1].color = toGameColor(color);
+
+    gf::Vector2f gameCenter = toGameCoords(center);
+    float gameRadius = radius / m_scale;
+
+    for (std::size_t i = 0; i < DebugCirclePointCount - 1; ++i) {
+      line[0].position = gameCenter + gameRadius * gf::unit( i      * 2.0f * gf::Pi / DebugCirclePointCount);
+      line[1].position = gameCenter + gameRadius * gf::unit((i + 1) * 2.0f * gf::Pi / DebugCirclePointCount);
+      lines.append(line[0]);
+      lines.append(line[1]);
+    }
   }
 
   void PhysicsDebugger::PhysicsDraw::DrawSolidCircle(const b2Vec2& center, float radius, const b2Vec2& axis, const b2Color& color) {
-    solidCircles.push_back({ gf::CircF(toGameCoords(center), radius / m_scale), toGameCoords(axis), toGameColor(color) });
+    gf::Vector2f gameCenter = toGameCoords(center);
+    float gameRadius = radius / m_scale;
+    gf::Color4f gameColor = toGameColor(color);
+
+    shapes.addCircle(gameCenter, gameRadius, gameColor, DebugCirclePointCount);
+
+    gf::Vertex line[2];
+    line[0].color = line[1].color = gf::Color::darker(gameColor, 0.3f);
+    line[0].position = gameCenter;
+    line[1].position = gameCenter + toGameCoords(axis);
+    lines.append(line[0]);
+    lines.append(line[1]);
   }
 
   void PhysicsDebugger::PhysicsDraw::DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color) {
-    segments.push_back({ toGameCoords(p1), toGameCoords(p2), toGameColor(color) });
+    gf::Vertex line[2];
+    line[0].color = line[1].color = toGameColor(color);
+    line[0].position = toGameCoords(p1);
+    line[1].position = toGameCoords(p2);
+    lines.append(line[0]);
+    lines.append(line[1]);
   }
 
   void PhysicsDebugger::PhysicsDraw::DrawTransform(const b2Transform& xf) {
-    transforms.push_back({ toGameCoords(xf.p), toGameCoords(xf.q.GetXAxis()), toGameCoords(xf.q.GetYAxis()) });
+    gf::Vector2f p = toGameCoords(xf.p);
+    gf::Vector2f xAxis = toGameCoords(xf.q.GetXAxis());
+    gf::Vector2f yAxis = toGameCoords(xf.q.GetYAxis());
+
+    gf::Vertex line[2];
+
+    line[0].color = line[1].color = gf::Color::Red;
+    line[0].position = p;
+    line[1].position = p + DebugTransformLength * xAxis;
+    lines.append(line[0]);
+    lines.append(line[1]);
+
+    line[0].color = line[1].color = gf::Color::Green;
+    line[0].position = p;
+    line[1].position = p + DebugTransformLength * yAxis;
+    lines.append(line[0]);
+    lines.append(line[1]);
   }
 
   void PhysicsDebugger::PhysicsDraw::DrawPoint(const b2Vec2& p, float size, const b2Color& color) {
-    points.push_back({ toGameCoords(p), size, toGameColor(color) });
+    shapes.addCircle(toGameCoords(p), size / 2, toGameColor(color));
   }
 
   gf::Vector2f PhysicsDebugger::PhysicsDraw::toGameCoords(b2Vec2 coords) {
